@@ -1,0 +1,18 @@
+# This one-shot unit is responsible for making any updates to software
+# repositories based on the system's third-party opt-in status. This is
+# mostly useful for rpm-ostree based systems, where we can't use file triggers
+# to do the update.
+
+[Unit]
+Description=Refresh Fedora Third-party Repositories
+Documentation=man:fedora-third-party(1)
+ConditionPathIsReadWrite=/etc
+Before=flatpak-system-helper.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=fedora-third-party refresh
+
+[Install]
+WantedBy=multi-user.target

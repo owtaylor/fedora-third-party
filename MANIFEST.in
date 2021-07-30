@@ -1,0 +1,4 @@
+include LICENSE
+include fedora-third-party.spec
+include doc/*.md
+include systemd/*.service
