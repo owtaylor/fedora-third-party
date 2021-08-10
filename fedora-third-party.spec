@@ -1,6 +1,6 @@
 Name:		fedora-third-party
 Version:	0.1
-Release:	1
+Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
 License:	MIT
@@ -24,7 +24,7 @@ enables/disables RPM repositories and adds/removes Flatpak repositories as neces
 
 
 %prep
-%autosetup -p1 -n fedora-third-party-0.1
+%autosetup -p1
 
 
 %build
@@ -73,7 +73,7 @@ fedora-third-party refresh
 
 %dnl This could potentially be used to remove Flatpak repositories (not currently implemented)
 %transfiletriggerpostun -- %{_prefix}/lib/%{name}/conf.d
-fedora-third-party refresh
+fedora-third-party refresh || :
 
 
 %changelog
