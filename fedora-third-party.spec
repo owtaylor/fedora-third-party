@@ -51,7 +51,7 @@ install -m0644 -D systemd/fedora-third-party-refresh.service -t %{buildroot}%{_u
 %license LICENSE
 %doc README.md
 %{_bindir}/%{name}
-%{python3_sitelib}/*
+%{python3_sitelib}/fedora_third_party*
 %{_localstatedir}/lib/%{name}
 %{_prefix}/lib/%{name}
 %{_mandir}/man1/%{name}.1*

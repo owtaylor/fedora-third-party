@@ -12,7 +12,7 @@ setup(name='fedora-third-party',
       author='Owen Taylor',
       author_email='otaylor@redhat.com',
       license='MIT',
-      packages=['fedora_third_party', 'tests'],
+      packages=['fedora_third_party'],
       include_package_data=True,
       entry_points=entry_points,
       )
