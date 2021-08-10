@@ -10,6 +10,7 @@ Source0:	fedora-third-party-%{version}.tar.gz
 BuildArch:	noarch
 
 BuildRequires:  systemd
+BuildRequires:	python3-devel
 BuildRequires:	python3-setuptools
 BuildRequires:  golang-github-cpuguy83-md2man
 
