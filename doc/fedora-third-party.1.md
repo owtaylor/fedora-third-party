@@ -67,19 +67,16 @@ Example of configuration for a DNF repository:
 
 ``` ini
 [somerepo]
+# The DNF repository must match and also be 'somerepo'
 type=dnf
-# Name of the DNF remote to enable/disable. This is typically the same as
-# the section name, but does not have to be.
-repository=somerepo
 ```
 
 Example of configuration for a Flatpak remote:
 
 ``` ini
 [somerepo]
-# Name of the flatpak-remote to create. This is typically the same as the
-# section name, but does not have to be.
-remote=somerepo
+# The Flatpak remote must match and also be 'somerepo'
+type=flatpak
 # Path to a flatpakrepo file defining the remote. If it's a relative
 # path, it will be interpreted relative to the directory where the
 # config file is.

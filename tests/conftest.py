@@ -60,14 +60,12 @@ class TestSetup:
             f.write(dedent("""\
                 [rpmfusion-nonfree-nvidia-driver]
                 type=dnf
-                repository=rpmfusion-nonfree-nvidia-driver
             """))
 
         with open(libconfdir / "flathub.conf", "w") as f:
             f.write(dedent("""\
                 [flathub]
                 type=flatpak
-                remote=flathub
                 flatpakrepo=flathub.flatpakrepo
                 keep_unfiltered=yes
             """))

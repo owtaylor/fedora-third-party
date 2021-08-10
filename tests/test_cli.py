@@ -89,7 +89,6 @@ def test_cli_refresh(setup, enabled):
         f.write(dedent("""\
             [myrepo]
             type=dnf
-            repository=myrepo
         """))
 
     setup.reload_config()
