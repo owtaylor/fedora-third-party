@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.2
+Version:	0.3
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -83,6 +83,11 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Wed Aug 11 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.3-1
+- Add --config-only options to the enable/disable subcommands
+- Allow detecting whether the config has been explicitly set, or whether no
+  decision has been made yet.
+
 * Tue Aug 10 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.2-1
 - Fix spec file, add polkit configuration and a --list subcommand
 
