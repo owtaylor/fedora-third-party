@@ -111,3 +111,16 @@ def refresh(cfg: config.Config):
                 repository.disable()
 
     cfg.update_seen_repositories()
+
+
+def opt_out():
+    """Single-purpose script to allow more liberal polkit rules"""
+
+    assert_root()
+
+    cfg = config.Config()
+    if cfg.is_enabled_set():
+        print("Use 'fedora-third-party disable' to change the existing status.", file=sys.stderr)
+        sys.exit(1)
+
+    cfg.disable()

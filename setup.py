@@ -3,6 +3,7 @@ from setuptools import setup
 entry_points = '''
     [console_scripts]
     fedora-third-party=fedora_third_party.cli:cli
+    fedora-third-party-opt-out=fedora_third_party.cli:opt_out
 '''
 
 setup(name='fedora-third-party',

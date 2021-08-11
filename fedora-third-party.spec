@@ -44,12 +44,17 @@ go-md2man -in doc/%{name}.1.md -out doc/%{name}.1
 %install
 %py3_install
 
+# This script is just for use under pkexec, move it out of bindir to avoid confusion
+mkdir -p %{buildroot}%{_prefix}/lib/%{name}
+mv %{buildroot}%{_bindir}/fedora-third-party-opt-out %{buildroot}%{_prefix}/lib/%{name}/fedora-third-party-opt-out
+
 mkdir -p %{buildroot}%{_localstatedir}/lib/%{name}
 mkdir -p %{buildroot}%{_prefix}/lib/%{name}/conf.d
 
 install -m0644 -D doc/%{name}.1 -t %{buildroot}%{_mandir}/man1
 install -m0644 -D systemd/fedora-third-party-refresh.service -t %{buildroot}%{_unitdir}
 install -m0644 -D polkit/org.fedoraproject.thirdparty.policy -t %{buildroot}%{_datadir}/polkit-1/actions
+install -m0644 -D polkit/org.fedoraproject.thirdparty.rules -t %{buildroot}%{_datadir}/polkit-1/rules.d
 
 
 %files
@@ -57,6 +62,7 @@ install -m0644 -D polkit/org.fedoraproject.thirdparty.policy -t %{buildroot}%{_d
 %doc README.md
 %{_bindir}/%{name}
 %{_datadir}/polkit-1/actions/*.policy
+%{_datadir}/polkit-1/rules.d/*.rules
 %{python3_sitelib}/fedora_third_party*
 %{_localstatedir}/lib/%{name}
 %{_prefix}/lib/%{name}

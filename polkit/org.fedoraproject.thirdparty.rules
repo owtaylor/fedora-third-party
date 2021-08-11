@@ -1,0 +1,11 @@
+// Allow the initial opt-out from the "unset" state to happen without an
+// authentication dialog.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.fedoraproject.thirdparty.opt-out" &&
+        subject.active == true && subject.local == true &&
+        subject.isInGroup("wheel")) {
+            return polkit.Result.YES;
+    }
+
+    return polkit.Result.NOT_HANDLED;
+});

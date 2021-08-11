@@ -4,7 +4,7 @@ from textwrap import dedent
 from click.testing import CliRunner
 import pytest
 
-from fedora_third_party.cli import cli
+from fedora_third_party.cli import cli, opt_out
 
 
 def test_cli(setup):
@@ -169,3 +169,32 @@ def test_cli_refresh(setup, enabled):
         assert setup.calls == [
             ['dnf', 'config-manager', '--set-disabled', 'myrepo']
         ]
+
+
+def test_cli_opt_out(setup):
+    with patch("fedora_third_party.config.Config", return_value=setup.cfg):
+        opt_out()
+
+    runner = CliRunner()
+
+    setup.reload_config()
+    result = runner.invoke(cli, ['query'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == 'Third-party repositories are disabled.\n'
+
+
+def test_cli_opt_out_later(setup, capsys):
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ['enable'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    with patch("fedora_third_party.config.Config", return_value=setup.cfg), \
+         patch("sys.exit", return_value=None) as mock_exit:
+        opt_out()
+
+    assert mock_exit.call_args == ((1,),)
+
+    assert capsys.readouterr().err == \
+        "Use 'fedora-third-party disable' to change the existing status.\n"
