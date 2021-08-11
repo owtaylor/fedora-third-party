@@ -11,7 +11,9 @@ BuildArch:	noarch
 
 BuildRequires:  systemd
 BuildRequires:	polkit
+BuildRequires:	python3-click
 BuildRequires:	python3-devel
+BuildRequires:	python3-pytest
 BuildRequires:	python3-setuptools
 BuildRequires:  golang-github-cpuguy83-md2man
 
