@@ -29,30 +29,36 @@ def cli(cfg: config.Config, verbose: bool):
 
 @cli.command()
 @pass_config
-def enable(cfg: config.Config):
+@click.option("--config-only", is_flag=True,
+              help="Don't change existing repositories")
+def enable(cfg: config.Config, config_only: bool):
     """Enable third-party repositories"""
     assert_root()
 
     cfg.enable()
 
-    for repository in cfg.list_repositories():
-        repository.enable()
+    if not config_only:
+        for repository in cfg.list_repositories():
+            repository.enable()
 
-    cfg.update_seen_repositories()
+        cfg.update_seen_repositories()
 
 
 @cli.command()
+@click.option("--config-only", is_flag=True,
+              help="Don't change existing repositories")
 @pass_config
-def disable(cfg: config.Config):
+def disable(cfg: config.Config, config_only: bool):
     """Disable third-party repositories"""
     assert_root()
 
     cfg.disable()
 
-    for repository in cfg.list_repositories():
-        repository.disable()
+    if not config_only:
+        for repository in cfg.list_repositories():
+            repository.disable()
 
-    cfg.update_seen_repositories()
+        cfg.update_seen_repositories()
 
 
 @cli.command()

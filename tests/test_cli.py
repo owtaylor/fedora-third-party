@@ -56,6 +56,32 @@ def test_cli(setup):
     assert result.output == 'no\n'
 
 
+def test_cli_config_only(setup):
+    runner = CliRunner()
+    setup.calls = []
+    result = runner.invoke(cli, ['enable', '--config-only'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert setup.calls == []
+
+    setup.reload_config()
+    result = runner.invoke(cli, ['query'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == 'yes\n'
+
+    runner = CliRunner()
+    setup.calls = []
+    result = runner.invoke(cli, ['disable', '--config-only'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert setup.calls == []
+
+    setup.reload_config()
+    result = runner.invoke(cli, ['query'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == 'no\n'
+
+
 def test_cli_nonroot(setup):
     runner = CliRunner()
     with patch("os.geteuid", return_value=1000):

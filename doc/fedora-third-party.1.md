@@ -22,12 +22,16 @@ Print detailed information about what is being done.
 
 The following commands are understood:
 
-### enable
+### enable [*--config-only*]
 
 Enables third-party repositories. Configured DNF repositories are enabled,
 and configured Flatpak remotes are created unless they already exist.
 
-### disable
+If *--config-only* is specified, existing repositories are not modified,
+but the configuration is updated so that newly added repositories will
+be enabled when `fedora-third-party refresh` is called.
+
+### disable [*--config-only*]
 
 Disables third-party repositories. Configured DNF repositories are disabled.
 Configured Flatpak remotes are removed, unless:
@@ -42,6 +46,10 @@ filter (see flatpak-remote-add(1)), this filter will be removed if the
 user installs a .flatpakrepo file for the same remote name without a filter.
 At this point, the remote is different from what was distributed with the
 Fedora edition and should be left untouched.
+
+If *--config-only* is specified, existing repositories are not modified,
+but the configuration is updated so that newly added repositories will
+not be enabled when `fedora-third-party refresh` is called.
 
 ### query [*--quiet* | *-q*]
 
