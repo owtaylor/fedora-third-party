@@ -10,6 +10,7 @@ Source0:	fedora-third-party-%{version}.tar.gz
 BuildArch:	noarch
 
 BuildRequires:  systemd
+BuildRequires:	polkit
 BuildRequires:	python3-devel
 BuildRequires:	python3-setuptools
 BuildRequires:  golang-github-cpuguy83-md2man
@@ -46,12 +47,14 @@ mkdir -p %{buildroot}%{_prefix}/lib/%{name}/conf.d
 
 install -m0644 -D doc/%{name}.1 -t %{buildroot}%{_mandir}/man1
 install -m0644 -D systemd/fedora-third-party-refresh.service -t %{buildroot}%{_unitdir}
+install -m0644 -D polkit/org.fedoraproject.thirdparty.policy -t %{buildroot}%{_datadir}/polkit-1/actions
 
 
 %files
 %license LICENSE
 %doc README.md
 %{_bindir}/%{name}
+%{_datadir}/polkit-1/actions/*.policy
 %{python3_sitelib}/fedora_third_party*
 %{_localstatedir}/lib/%{name}
 %{_prefix}/lib/%{name}

@@ -1,5 +1,6 @@
 include LICENSE
 include fedora-third-party.spec
 include doc/*.md
+include polkit/*.policy
 include systemd/*.service
 include tests/*.py
