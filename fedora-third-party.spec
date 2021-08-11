@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.3
+Version:	0.4
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -89,6 +89,10 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Wed Aug 11 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.4-1
+- Add a special 'fedora-third-party-opt-out' script to go from unset => disabled
+  without a polkit auth dialog.
+
 * Wed Aug 11 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.3-1
 - Add --config-only options to the enable/disable subcommands
 - Allow detecting whether the config has been explicitly set, or whether no

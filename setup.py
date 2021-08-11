@@ -7,7 +7,7 @@ entry_points = '''
 '''
 
 setup(name='fedora-third-party',
-      version='0.3',
+      version='0.4',
       description='Tool for managing third-party repositories on Fedora',
       url='https://pagure.io/fedora-third-party',
       author='Owen Taylor',
