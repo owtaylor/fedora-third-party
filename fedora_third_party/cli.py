@@ -4,6 +4,7 @@ import os
 import sys
 
 from . import config
+from .table import Table
 
 
 pass_config = click.make_pass_decorator(config.Config, ensure=True)
@@ -64,6 +65,24 @@ def query(cfg: config.Config, quiet: bool):
         sys.exit(0 if cfg.is_enabled() else 1)
     else:
         print("yes" if cfg.is_enabled() else "no")
+
+
+@cli.command()
+@click.option("--csv", is_flag=True,
+              help="Print output in csv form")
+@click.option("--columns",
+              help="Comma separated list of columns [name,type]",
+              default="name,type")
+@pass_config
+def list(cfg: config.Config, csv: bool, columns: str):
+    """List currently configured repositories"""
+
+    table = Table()
+    table.add_column("name", "Name", "name")
+    table.add_column("type", "Type", "type")
+
+    repositories = sorted(cfg.list_repositories(), key=lambda x: x.name)
+    table.dump(repositories, csv=csv, columns=[x.strip() for x in columns.split(",")])
 
 
 @cli.command()

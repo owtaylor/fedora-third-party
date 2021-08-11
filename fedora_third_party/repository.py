@@ -34,6 +34,8 @@ class Repository(ABC):
 
 
 class DnfRepository(Repository):
+    type = 'dnf'
+
     def __init__(self, cfg: Config, name: str, parser: ConfigParser):
         super().__init__(cfg, name)
 
@@ -77,6 +79,8 @@ def get_flatpak_remotes():
 
 
 class FlatpakRepository(Repository):
+    type = 'flatpak'
+
     def __init__(self, cfg: Config, name: str, parser: ConfigParser):
         super().__init__(cfg, name)
         self.flatpakrepo = parser.get(name, "flatpakrepo")

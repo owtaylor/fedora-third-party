@@ -71,6 +71,41 @@ def test_cli_verbose(setup):
     assert result.output == 'no\n'
 
 
+def test_cli_list(setup):
+    runner = CliRunner()
+    result = runner.invoke(cli, ['list'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == dedent("""\
+        Name                            Type
+        ------------------------------- -------
+        flathub                         flatpak
+        rpmfusion-nonfree-nvidia-driver dnf
+    """)
+
+
+def test_cli_list_csv(setup):
+    runner = CliRunner()
+    result = runner.invoke(cli, ['list', '--csv'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == dedent("""\
+        flathub,flatpak
+        rpmfusion-nonfree-nvidia-driver,dnf
+    """)
+
+
+def test_cli_list_columns(setup):
+    runner = CliRunner()
+    result = runner.invoke(cli, ['list', '--csv', '--columns=type'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == dedent("""\
+        flatpak
+        dnf
+    """)
+
+
 @pytest.mark.parametrize("enabled", [False, True])
 def test_cli_refresh(setup, enabled):
     runner = CliRunner()

@@ -57,6 +57,22 @@ Look for newly added third-party repository definitions, and if third-party
 repositories are enabled, enable DNF repositories and create Flatpak
 remotes.
 
+### list [*--csv* | *--columns=col1,col2*]
+
+Prints the list of currently configured repositories. By default, the list
+will be pretty-printed in tabular form with headers. The *--csv* option can
+be used to switch the output to comma-separated-value format without headers.
+
+The columns to be printed can be specified with the *--columns* options.
+Currently supported values are `name` for the name of the repository
+(which is the same as the DNF repository name or Flatpak remote name)), and
+`type` for the type of the repository (either `dnf` or `flatpak`).
+
+*--columns* should always be specified together with *--csv* to
+get stable output - the default set of columns may change. With
+the current columns, you can assume that the values will
+not be quoted.
+
 ## CONFIGURATION
 
 Repositories are configured by files in `/usr/lib/fedora-third-party/conf.d`.
