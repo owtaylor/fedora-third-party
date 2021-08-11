@@ -53,11 +53,12 @@ not be enabled when `fedora-third-party refresh` is called.
 
 ### query [*--quiet* | *-q*]
 
-Prints "yes" on standard output if third-party repositories are enabled,
-otherwise prints no.
+Prints a human-readable string describing the whether third-party repositories
+hae been enabled.
 
 When *--quiet* is specified, no output is printed, and the status is
-given by the exit code (0 for enabled, 1 for disabled).
+given by the exit code (0 for enabled, 1 for disabled, 2 for disabled
+if no selection has yet been made).
 
 ### refresh
 

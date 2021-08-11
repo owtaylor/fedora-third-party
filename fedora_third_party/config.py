@@ -11,11 +11,7 @@ class Config:
         self.state_path = self.root / "var/lib/fedora-third-party/state"
 
         self.state_parser = ConfigParser(interpolation=None, comment_prefixes="#")
-        self.state_parser.read_dict({
-            'main': {
-                'enabled': False
-            }
-        })
+        self.state_parser.add_section("main")
         self.state_parser.read(self.state_path)
 
         section_parser = ConfigParser(interpolation=None, comment_prefixes="#")
@@ -34,7 +30,10 @@ class Config:
                     self.repositories.append(FlatpakRepository(self, section_name, section_parser))
 
     def is_enabled(self):
-        return self.state_parser.getboolean('main', 'enabled')
+        return self.state_parser.getboolean('main', 'enabled', fallback=False)
+
+    def is_enabled_set(self):
+        return self.state_parser.getboolean('main', 'enabled', fallback=None) is not None
 
     def is_repository_seen(self, repository: Repository):
         return self.state_parser.getboolean(repository.name, 'seen', fallback=False)

@@ -68,9 +68,14 @@ def disable(cfg: config.Config, config_only: bool):
 def query(cfg: config.Config, quiet: bool):
     """Query the current status"""
     if quiet:
-        sys.exit(0 if cfg.is_enabled() else 1)
+        sys.exit(0 if cfg.is_enabled() else 1 if cfg.is_enabled_set() else 2)
     else:
-        print("yes" if cfg.is_enabled() else "no")
+        if cfg.is_enabled():
+            print("Third-party repositories are enabled.")
+        elif cfg.is_enabled_set():
+            print("Third-party repositories are disabled.")
+        else:
+            print("Third-party repositories are disabled (no selection has been made).")
 
 
 @cli.command()

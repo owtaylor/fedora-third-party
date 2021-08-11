@@ -11,10 +11,10 @@ def test_cli(setup):
     runner = CliRunner()
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
     assert result.exit_code == 0
-    assert result.output == 'no\n'
+    assert result.output == 'Third-party repositories are disabled (no selection has been made).\n'
 
     result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
-    assert result.exit_code == 1
+    assert result.exit_code == 2
     assert result.output == ''
 
     setup.calls = []
@@ -29,7 +29,7 @@ def test_cli(setup):
 
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
     assert result.exit_code == 0
-    assert result.output == 'yes\n'
+    assert result.output == 'Third-party repositories are enabled.\n'
 
     result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
     assert result.exit_code == 0
@@ -38,9 +38,6 @@ def test_cli(setup):
     setup.set_flatpak_remotes({
         "flathub": "/etc/fedora-flathub.filter",
     })
-
-    with open(setup.cfg.state_path) as f:
-        print(f.read())
 
     setup.calls = []
     result = runner.invoke(cli, ['disable'], obj=setup.cfg)
@@ -53,7 +50,11 @@ def test_cli(setup):
 
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
     assert result.exit_code == 0
-    assert result.output == 'no\n'
+    assert result.output == 'Third-party repositories are disabled.\n'
+
+    result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
+    assert result.exit_code == 1
+    assert result.output == ''
 
 
 def test_cli_config_only(setup):
@@ -65,9 +66,9 @@ def test_cli_config_only(setup):
     assert setup.calls == []
 
     setup.reload_config()
-    result = runner.invoke(cli, ['query'], obj=setup.cfg)
+    result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
     assert result.exit_code == 0
-    assert result.output == 'yes\n'
+    assert result.output == ''
 
     runner = CliRunner()
     setup.calls = []
@@ -77,9 +78,9 @@ def test_cli_config_only(setup):
     assert setup.calls == []
 
     setup.reload_config()
-    result = runner.invoke(cli, ['query'], obj=setup.cfg)
-    assert result.exit_code == 0
-    assert result.output == 'no\n'
+    result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
+    assert result.exit_code == 1
+    assert result.output == ''
 
 
 def test_cli_nonroot(setup):
@@ -92,9 +93,9 @@ def test_cli_nonroot(setup):
 
 def test_cli_verbose(setup):
     runner = CliRunner()
-    result = runner.invoke(cli, ['-v', 'query'], obj=setup.cfg)
-    assert result.exit_code == 0
-    assert result.output == 'no\n'
+    result = runner.invoke(cli, ['-v', 'query', '-q'], obj=setup.cfg)
+    assert result.exit_code == 2
+    assert result.output == ''
 
 
 def test_cli_list(setup):
