@@ -9,22 +9,23 @@ Source0:	fedora-third-party-%{version}.tar.gz
 
 BuildArch:	noarch
 
-BuildRequires:  systemd
+BuildRequires:	systemd
 BuildRequires:	polkit
 BuildRequires:	python3-click
 BuildRequires:	python3-devel
 BuildRequires:	python3-pytest
 BuildRequires:	python3-setuptools
-BuildRequires:  golang-github-cpuguy83-md2man
+BuildRequires:	golang-github-cpuguy83-md2man
 
 # For 'dnf config-manager'
 Requires: dnf-plugins-core
 Requires: python3-click
 
 %description
-fedora-third-party is a tool for handling third-party RPM and Flatpak repositories in Fedora.
-It is used to handle the user changing their opt-in status for these repositories, and
-enables/disables RPM repositories and adds/removes Flatpak repositories as necessary.
+fedora-third-party is a tool for handling third-party RPM and Flatpak
+repositories in Fedora.  It is used to handle the user changing their opt-in
+status for these repositories, and enables/disables RPM repositories and
+adds/removes Flatpak repositories as necessary.
 
 
 %prep
