@@ -88,6 +88,10 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Mon Aug 16 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.5-1
+- Remove dependency on 'dnf config-manager'
+- Make fedora-third-party-refresh.service only run on rpm-ostree systems
+
 * Wed Aug 11 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.4-1
 - Add a special 'fedora-third-party-opt-out' script to go from unset => disabled
   without a polkit auth dialog.
