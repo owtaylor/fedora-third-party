@@ -7,6 +7,7 @@
 Description=Refresh Fedora Third-party Repositories
 Documentation=man:fedora-third-party(1)
 ConditionPathIsReadWrite=/etc
+ConditionPathExists=/run/ostree-booted
 Before=flatpak-system-helper.service
 
 [Service]
