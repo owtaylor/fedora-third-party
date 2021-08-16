@@ -4,6 +4,7 @@ from textwrap import dedent
 from click.testing import CliRunner
 import pytest
 
+from fedora_third_party.dnf_config_editor import DnfConfigEditor
 from fedora_third_party.cli import cli, opt_out
 
 
@@ -22,10 +23,10 @@ def test_cli(setup):
     assert result.exit_code == 0
     assert result.output == ''
     assert sorted(setup.calls) == sorted([
-        ['dnf', 'config-manager', '--set-enabled', 'rpmfusion-nonfree-nvidia-driver'],
         ['flatpak', 'remote-add', '--from', 'flathub',
          str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo")],
     ])
+    setup.assert_dnf_repo_status(enabled=True)
 
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
     assert result.exit_code == 0
@@ -44,9 +45,9 @@ def test_cli(setup):
     assert result.exit_code == 0
     assert result.output == ''
     assert sorted(setup.calls) == sorted([
-        ['dnf', 'config-manager', '--set-disabled', 'rpmfusion-nonfree-nvidia-driver'],
         ['flatpak', 'remote-delete', 'flathub'],
     ])
+    setup.assert_dnf_repo_status(enabled=False)
 
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
     assert result.exit_code == 0
@@ -59,23 +60,26 @@ def test_cli(setup):
 
 def test_cli_config_only(setup):
     runner = CliRunner()
-    setup.calls = []
     result = runner.invoke(cli, ['enable', '--config-only'], obj=setup.cfg)
     assert result.exit_code == 0
     assert result.output == ''
-    assert setup.calls == []
+    setup.assert_dnf_repo_status(enabled=False)
 
     setup.reload_config()
     result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
     assert result.exit_code == 0
     assert result.output == ''
 
+    # Simulate manually changing the override status of the rpmfusion repo
+    editor = DnfConfigEditor(root=setup.root)
+    editor.set_enabled("rpmfusion-nonfree-nvidia-driver", True)
+    editor.save()
+
     runner = CliRunner()
-    setup.calls = []
     result = runner.invoke(cli, ['disable', '--config-only'], obj=setup.cfg)
     assert result.exit_code == 0
     assert result.output == ''
-    assert setup.calls == []
+    setup.assert_dnf_repo_status(enabled=True)
 
     setup.reload_config()
     result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
@@ -146,6 +150,11 @@ def test_cli_refresh(setup, enabled):
         assert result.exit_code == 0
         assert result.output == ''
 
+    # Simulate manually changing the override status of the rpmfusion repo
+    editor = DnfConfigEditor(root=setup.root)
+    editor.set_enabled("rpmfusion-nonfree-nvidia-driver", not enabled)
+    editor.save()
+
     libconfdir = setup.root / "usr/lib/fedora-third-party/conf.d"
     with open(libconfdir / "myrepo.conf", "w") as f:
         f.write(dedent("""\
@@ -153,22 +162,25 @@ def test_cli_refresh(setup, enabled):
             type=dnf
         """))
 
+    reposdir = setup.root / "etc/yum.repos.d"
+    with open(reposdir / "myrepo.repo", "w") as f:
+        f.write(dedent("""\
+            [myrepo]
+            name=My Repo
+            enabled=42  # neither enabled or disabled
+        """))
+
     setup.reload_config()
 
-    setup.calls = []
     result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
     assert not result.exception
     assert result.exit_code == 0
     assert result.output == ''
 
-    if enabled:
-        assert setup.calls == [
-            ['dnf', 'config-manager', '--set-enabled', 'myrepo']
-        ]
-    else:
-        assert setup.calls == [
-            ['dnf', 'config-manager', '--set-disabled', 'myrepo']
-        ]
+    # Check that the rpm fusion repo is unchanged
+    setup.assert_dnf_repo_status(enabled=not enabled)
+    # But the new repo is enabled
+    setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=enabled)
 
 
 def test_cli_opt_out(setup):

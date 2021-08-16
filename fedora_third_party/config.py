@@ -1,6 +1,8 @@
 from configparser import ConfigParser
+from functools import cached_property
 from pathlib import Path
 
+from .dnf_config_editor import DnfConfigEditor
 from .repository import DnfRepository, FlatpakRepository, Repository
 
 
@@ -69,3 +71,7 @@ class Config:
 
     def list_repositories(self):
         return self.repositories
+
+    @cached_property
+    def dnf_config_editor(self):
+        return DnfConfigEditor(root=str(self.root))

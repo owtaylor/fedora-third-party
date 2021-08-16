@@ -1,4 +1,5 @@
 from pathlib import Path
+from subprocess import check_call
 from textwrap import dedent
 from unittest import mock
 
@@ -16,7 +17,10 @@ class TestSetup:
         self.set_flatpak_remotes({})
 
     def _check_call(self, args):
-        self.calls.append(args)
+        if args[0] == 'flatpak':
+            self.calls.append(args)
+        else:
+            check_call(args)
 
     def _check_output(self, args, encoding=None):
         assert encoding == "UTF-8"
@@ -33,12 +37,20 @@ class TestSetup:
     def reload_config(self):
         self.cfg = Config(root=self.root)
 
+    def assert_dnf_repo_status(self, *, enabled, repofile="rpmfusion-nonfree-nvidia-driver.repo"):
+        yumreposdir = self.root / "etc/yum.repos.d"
+        contents = (yumreposdir / repofile).read_text()
+        if enabled:
+            assert "enabled=1" in contents
+        else:
+            assert "enabled=0" in contents
+
     def run(self):
         self.root.mkdir()
 
         yumreposdir = self.root / "etc/yum.repos.d"
         yumreposdir.mkdir(parents=True)
-        with open(yumreposdir / "rpmfusion-nonfree-nvidia-driver.conf", "w") as f:
+        with open(yumreposdir / "rpmfusion-nonfree-nvidia-driver.repo", "w") as f:
             f.write(dedent("""\
                 [rpmfusion-nonfree-nvidia-driver]
                 name=RPM Fusion for Fedora $releasever - Nonfree - NVIDIA Driver

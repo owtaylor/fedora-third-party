@@ -1,9 +1,18 @@
 from configparser import ConfigParser
+from textwrap import dedent
 
 from fedora_third_party.repository import DnfRepository, FlatpakRepository
 
 
 def test_dnf_repository(setup):
+    reposdir = setup.root / "etc/yum.repos.d"
+    with open(reposdir / "myrepo.repo", "w") as f:
+        f.write(dedent("""\
+            [myrepo]
+            name=My Repo
+            enabled=0
+        """))
+
     parser = ConfigParser()
     parser.add_section('myrepo')
     parser.set('myrepo', 'type', 'dnf')
@@ -11,11 +20,11 @@ def test_dnf_repository(setup):
     repository = DnfRepository(setup.cfg, 'myrepo', parser)
     assert not repository.is_seen()
     repository.enable()
+    setup.cfg.dnf_config_editor.save()
+    setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=True)
     repository.disable()
-    assert setup.calls == [
-        ['dnf', 'config-manager', '--set-enabled', 'myrepo'],
-        ['dnf', 'config-manager', '--set-disabled', 'myrepo'],
-    ]
+    setup.cfg.dnf_config_editor.save()
+    setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=False)
 
 
 def make_flatpak_repository(setup):

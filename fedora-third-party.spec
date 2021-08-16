@@ -17,8 +17,6 @@ BuildRequires:	python3-pytest
 BuildRequires:	python3-setuptools
 BuildRequires:	golang-github-cpuguy83-md2man
 
-# For 'dnf config-manager'
-Requires: dnf-plugins-core
 Requires: python3-click
 
 %description

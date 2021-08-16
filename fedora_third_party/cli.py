@@ -42,6 +42,7 @@ def enable(cfg: config.Config, config_only: bool):
             repository.enable()
 
         cfg.update_seen_repositories()
+        cfg.dnf_config_editor.save()
 
 
 @cli.command()
@@ -59,6 +60,7 @@ def disable(cfg: config.Config, config_only: bool):
             repository.disable()
 
         cfg.update_seen_repositories()
+        cfg.dnf_config_editor.save()
 
 
 @cli.command()
@@ -111,6 +113,7 @@ def refresh(cfg: config.Config):
                 repository.disable()
 
     cfg.update_seen_repositories()
+    cfg.dnf_config_editor.save()
 
 
 def opt_out():

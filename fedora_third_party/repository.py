@@ -39,18 +39,11 @@ class DnfRepository(Repository):
     def __init__(self, cfg: Config, name: str, parser: ConfigParser):
         super().__init__(cfg, name)
 
-    def run_dnf(self, args):
-        command = ['dnf']
-        command += args
-
-        logger.info("Calling %s", " ".join(command))
-        subprocess.check_call(command)
-
     def enable(self):
-        self.run_dnf(['config-manager', '--set-enabled', self.name])
+        self.cfg.dnf_config_editor.set_enabled(self.name, True)
 
     def disable(self):
-        self.run_dnf(['config-manager', '--set-disabled', self.name])
+        self.cfg.dnf_config_editor.set_enabled(self.name, False)
 
 
 @dataclass
