@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.4
+Version:	0.6
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -88,6 +88,10 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Mon Aug 16 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.6-1
+- Don't write /var/lib/fedora-third-party/state on refresh if no changes
+  Resolves: rhbz#1994830
+
 * Mon Aug 16 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.5-1
 - Remove dependency on 'dnf config-manager'
 - Make fedora-third-party-refresh.service only run on rpm-ostree systems
