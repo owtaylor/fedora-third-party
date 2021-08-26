@@ -105,12 +105,18 @@ def refresh(cfg: config.Config):
 
     assert_root()
 
-    for repository in cfg.list_repositories():
-        if not repository.is_seen():
-            if cfg.is_enabled():
-                repository.enable()
-            else:
-                repository.disable()
+    if not cfg.is_enabled_set():
+        return
+
+    unseen = [r for r in cfg.list_repositories() if not r.is_seen()]
+    if len(unseen) == 0:
+        return
+
+    for repository in unseen:
+        if cfg.is_enabled():
+            repository.enable()
+        else:
+            repository.disable()
 
     cfg.update_seen_repositories()
     cfg.dnf_config_editor.save()

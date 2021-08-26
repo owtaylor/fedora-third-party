@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch
 from textwrap import dedent
 
@@ -181,6 +182,35 @@ def test_cli_refresh(setup, enabled):
     setup.assert_dnf_repo_status(enabled=not enabled)
     # But the new repo is enabled
     setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=enabled)
+
+
+def test_cli_refresh_fresh_install(setup):
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    assert not (setup.root / 'var/lib/fedora-third-party/state').exists()
+
+
+def test_cli_refresh_noop(setup):
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ['enable'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    statefile = setup.root / 'var/lib/fedora-third-party/state'
+
+    os.utime(statefile, (0, 0))
+    assert statefile.stat().st_mtime == 0
+
+    result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    assert statefile.stat().st_mtime == 0
 
 
 def test_cli_opt_out(setup):
