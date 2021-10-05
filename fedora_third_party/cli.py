@@ -81,20 +81,26 @@ def query(cfg: config.Config, quiet: bool):
 
 
 @cli.command()
+@click.option("-a", "--all", is_flag=True,
+              help="Show repositories even if they are replaced by a system repository")
 @click.option("--csv", is_flag=True,
               help="Print output in csv form")
 @click.option("--columns",
               help="Comma separated list of columns [name,type]",
               default="name,type")
 @pass_config
-def list(cfg: config.Config, csv: bool, columns: str):
+def list(cfg: config.Config, all: bool, csv: bool, columns: str):
     """List currently configured repositories"""
 
     table = Table()
     table.add_column("name", "Name", "name")
     table.add_column("type", "Type", "type")
 
-    repositories = sorted(cfg.list_repositories(), key=lambda x: x.name)
+    repositories = cfg.list_repositories()
+    if not all:
+        repositories = [r for r in cfg.list_repositories() if not r.is_hidden()]
+
+    repositories = sorted(repositories, key=lambda x: x.name)
     table.dump(repositories, csv=csv, columns=[x.strip() for x in columns.split(",")])
 
 

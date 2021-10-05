@@ -108,3 +108,15 @@ def test_flatpak_repository_keep_unfiltered(setup):
     repository.disable()
     assert setup.calls == [
     ]
+
+
+def test_flatpak_repository_hide_unfiltered(setup):
+    repository = make_flatpak_repository(setup)
+
+    repository.enable()
+
+    setup.set_flatpak_remotes({
+        "myrepo": "-"
+    })
+
+    assert repository.is_hidden()

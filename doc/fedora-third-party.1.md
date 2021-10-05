@@ -66,7 +66,7 @@ Look for newly added third-party repository definitions, and if third-party
 repositories are enabled, enable DNF repositories and create Flatpak
 remotes.
 
-### list [*--csv* | *--columns=col1,col2*]
+### list [*-a* | *--all* | *--csv* | *--columns=col1,col2*]
 
 Prints the list of currently configured repositories. By default, the list
 will be pretty-printed in tabular form with headers. The *--csv* option can
@@ -81,6 +81,10 @@ Currently supported values are `name` for the name of the repository
 get stable output - the default set of columns may change. With
 the current columns, you can assume that the values will
 not be quoted.
+
+Flatpak repositories with the `keep_unfiltered` option set are hidden by
+default from the list if there is a matching remote without a filter.
+*a* or *--all* can be passed to show all repositories.
 
 ## CONFIGURATION
 
@@ -102,12 +106,14 @@ Example of configuration for a Flatpak remote:
 [somerepo]
 # The Flatpak remote must match and also be 'somerepo'
 type=flatpak
+
 # Path to a flatpakrepo file defining the remote. If it's a relative
 # path, it will be interpreted relative to the directory where the
 # config file is.
 flatpakrepo=somerepo.flatpakrepo
 # If present, 'fedora-third-party disable' will leave this repository
-# untouched if it has been modified to not have a filter.
+# untouched if it has been modified to not have a filter, and it will
+# also be hidden from the output of 'fedora-third-party list'
 keep_unfiltered=yes
 ```
 

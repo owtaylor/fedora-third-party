@@ -116,6 +116,32 @@ def test_cli_list(setup):
     """)
 
 
+def test_cli_list_hide_unfiltered(setup):
+    setup.set_flatpak_remotes({
+        "flathub": "-"
+    })
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ['list'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == dedent("""\
+        Name                            Type
+        ------------------------------- ----
+        rpmfusion-nonfree-nvidia-driver dnf
+    """)
+
+    result = runner.invoke(cli, ['list', '-a'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == dedent("""\
+        Name                            Type
+        ------------------------------- -------
+        flathub                         flatpak
+        rpmfusion-nonfree-nvidia-driver dnf
+    """)
+
+
 def test_cli_list_csv(setup):
     runner = CliRunner()
     result = runner.invoke(cli, ['list', '--csv'], obj=setup.cfg)

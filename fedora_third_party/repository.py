@@ -29,6 +29,9 @@ class Repository(ABC):
     def disable(self):
         pass
 
+    def is_hidden(self):
+        return False
+
     def is_seen(self):
         return self.cfg.is_repository_seen(self)
 
@@ -81,6 +84,17 @@ class FlatpakRepository(Repository):
         if not os.path.isabs(self.flatpakrepo):
             self.flatpakrepo = str(self.cfg.libconfdir / self.flatpakrepo)
 
+    def get_existing_remote(self):
+        return next((r for r in get_flatpak_remotes() if r.name == self.name), None)
+
+    def is_hidden(self):
+        if self.keep_unfiltered:
+            remote = self.get_existing_remote()
+            if remote and remote.filter is None:
+                return True
+
+        return False
+
     def run_flatpak(self, args):
         command = ["flatpak"]
         command += args
@@ -89,8 +103,7 @@ class FlatpakRepository(Repository):
         subprocess.check_call(command)
 
     def enable(self):
-        remotes = get_flatpak_remotes()
-        if not any(self.name == remote.name for remote in remotes):
+        if not self.get_existing_remote():
             self.run_flatpak(['remote-add', '--from', self.name, self.flatpakrepo])
             self.cfg.set_repository_added(self, True)
 
@@ -99,7 +112,7 @@ class FlatpakRepository(Repository):
         if not self.cfg.is_repository_added(self):
             return
 
-        remote = next((r for r in get_flatpak_remotes() if r.name == self.name), None)
+        remote = self.get_existing_remote()
         if remote is None:
             return
 
