@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.6
+Version:	0.7
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -88,6 +88,10 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Tue Oct 5 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.7-1
+- Don't show repositories that are modified to remove the filter in
+  the output of `fedora-third-party list.
+
 * Mon Aug 16 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.6-1
 - Don't write /var/lib/fedora-third-party/state on refresh if no changes
   Resolves: rhbz#1994830
