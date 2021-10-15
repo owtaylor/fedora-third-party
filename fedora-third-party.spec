@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.7
+Version:	0.8
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -88,6 +88,9 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Fri Oct 15 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.8-1
+- Drop a chcon call that was making problems for selinux confinement
+
 * Tue Oct 5 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.7-1
 - Don't show repositories that are modified to remove the filter in
   the output of `fedora-third-party list.
