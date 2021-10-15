@@ -102,9 +102,8 @@ class DnfConfigEditor:
                 success = False
                 try:
                     temp.write(self.files[repopath])
-                    # propagate permissions and selinux context to the new file
+                    # propagate permissions to the new file
                     os.chmod(temp.name, repopath.stat().st_mode)
-                    subprocess.check_call(['chcon', '--reference', repopath, temp.name])
                     os.rename(temp.name, repopath)
                     success = True
                 finally:
