@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.8
+Version:	0.9
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -88,6 +88,11 @@ fedora-third-party refresh || :
 
 
 %changelog
+* Thu Mar 30 2022 Owen W. Taylor <otaylor@fishsoup.net> - 0.9-1
+- Fix problem where title from .flatpakrepo files was ignored
+- Enable/disable Flathub repositories instead of adding/removing them
+  (Create disabled when opting out)
+
 * Fri Oct 15 2021 Owen W. Taylor <otaylor@fishsoup.net> - 0.8-1
 - Drop a chcon call that was making problems for selinux confinement
 
