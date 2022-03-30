@@ -9,6 +9,11 @@ import os
 import subprocess
 from typing import List, Optional, TYPE_CHECKING
 
+import gi
+gi.require_version("GLib", "2.0")
+from gi.repository import GLib
+
+
 if TYPE_CHECKING:
     from .config import Config
 
@@ -102,9 +107,34 @@ class FlatpakRepository(Repository):
         logger.info("Calling %s", " ".join(command))
         subprocess.check_call(command)
 
+    def get_flatpakrepo_param(self, key):
+        key_file = GLib.KeyFile.new()
+        key_file.load_from_file(self.flatpakrepo, GLib.KeyFileFlags.NONE)
+
+        try:
+            return key_file.get_locale_string('Flatpak Repo', key)
+        except GLib.Error as e:
+            assert (e.matches(GLib.key_file_error_quark(), GLib.KeyFileError.GROUP_NOT_FOUND) or
+                    e.matches(GLib.key_file_error_quark(), GLib.KeyFileError.KEY_NOT_FOUND))
+            return None
+
     def enable(self):
         if not self.get_existing_remote():
-            self.run_flatpak(['remote-add', '--from', self.name, self.flatpakrepo])
+            args = ['remote-add', '--from', self.name, self.flatpakrepo]
+
+            # Priority is:
+            #  - title, etc. from command line
+            #  - title, etc. from downloaded remote metadata
+            #  - title, etc. from flatpakrepo file
+            #
+            # But we want to be able to override the parameters from the remote, so we force the
+            # title, etc. from the flatpakrepo file into the command line
+            for key in ('Title', 'Comment', 'Description'):
+                value = self.get_flatpakrepo_param(key)
+                if value:
+                    option = '--' + key.lower()
+                    args += [option, value]
+            self.run_flatpak(args)
             self.cfg.set_repository_added(self, True)
 
     def disable(self):

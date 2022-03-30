@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from textwrap import dedent
+from typing import Optional
 
 from fedora_third_party.repository import DnfRepository, FlatpakRepository
 
@@ -27,7 +28,13 @@ def test_dnf_repository(setup):
     setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=False)
 
 
-def make_flatpak_repository(setup):
+def make_flatpak_repository(setup, title: Optional[str] = "My Repo"):
+    libconfdir = setup.root / "usr/lib/fedora-third-party/conf.d"
+    with open(libconfdir / "myrepo.flatpakrepo", "w") as f:
+        f.write("[Flatpak Repo]\n")
+        if title is not None:
+            f.write(f"Title={title}\n")
+
     parser = ConfigParser()
     parser.add_section('myrepo')
     parser.set('myrepo', 'type', 'flatpak')
@@ -44,7 +51,8 @@ def test_flatpak_repository(setup):
     repository.enable()
     assert setup.calls == [
         ['flatpak', 'remote-add', '--from', 'myrepo',
-         str(setup.root / "usr/lib/fedora-third-party/conf.d/myrepo.flatpakrepo")],
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/myrepo.flatpakrepo"),
+         '--title', 'My Repo'],
     ]
 
     setup.set_flatpak_remotes({
@@ -55,6 +63,17 @@ def test_flatpak_repository(setup):
     repository.disable()
     assert setup.calls == [
         ['flatpak', 'remote-delete', 'myrepo'],
+    ]
+
+
+def test_flatpak_repository_enable_no_title(setup):
+    repository = make_flatpak_repository(setup, title=None)
+
+    setup.calls = []
+    repository.enable()
+    assert setup.calls == [
+        ['flatpak', 'remote-add', '--from', 'myrepo',
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/myrepo.flatpakrepo")],
     ]
 
 
@@ -83,7 +102,8 @@ def test_flatpak_repository_was_removed(setup):
     repository.enable()
     assert setup.calls == [
         ['flatpak', 'remote-add', '--from', 'myrepo',
-         str(setup.root / "usr/lib/fedora-third-party/conf.d/myrepo.flatpakrepo")],
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/myrepo.flatpakrepo"),
+         '--title', 'My Repo'],
     ]
 
     setup.set_flatpak_remotes({

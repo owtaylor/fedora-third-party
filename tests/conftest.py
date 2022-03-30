@@ -85,11 +85,11 @@ class TestSetup:
         with open(libconfdir / "flathub.flatpakrepo", "w") as f:
             f.write(dedent("""\
                 [Flatpak Repo]
-                Title=Flathub
+                Title=Fedora Flathub Selection
                 Url=https://dl.flathub.org/repo/
                 Homepage=https://flathub.org/
-                Comment=Central repository of Flatpak applications
-                Description=Central repository of Flatpak applications
+                Comment=Selected applications from Flathub
+                Description=Selected applications from Flathub (https://flathub.org)
                 Icon=https://dl.flathub.org/repo/logo.svg
                 Filter=/etc/fedora-flathub.filter
             """))

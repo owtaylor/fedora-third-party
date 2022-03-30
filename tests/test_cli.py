@@ -25,7 +25,10 @@ def test_cli(setup):
     assert result.output == ''
     assert sorted(setup.calls) == sorted([
         ['flatpak', 'remote-add', '--from', 'flathub',
-         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo")],
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
+         '--title', 'Fedora Flathub Selection',
+         '--comment', 'Selected applications from Flathub',
+         '--description', 'Selected applications from Flathub (https://flathub.org)']
     ])
     setup.assert_dnf_repo_status(enabled=True)
 
