@@ -41,15 +41,15 @@ def test_cli(setup):
     assert result.output == ''
 
     setup.set_flatpak_remotes({
-        "flathub": "/etc/fedora-flathub.filter",
+        "flathub": ("/etc/fedora-flathub.filter", False)
     })
 
     setup.calls = []
     result = runner.invoke(cli, ['disable'], obj=setup.cfg)
-    assert result.exit_code == 0
     assert result.output == ''
+    assert result.exit_code == 0
     assert sorted(setup.calls) == sorted([
-        ['flatpak', 'remote-delete', 'flathub'],
+        ['flatpak', 'remote-modify', 'flathub', '--disable'],
     ])
     setup.assert_dnf_repo_status(enabled=False)
 
@@ -121,7 +121,7 @@ def test_cli_list(setup):
 
 def test_cli_list_hide_unfiltered(setup):
     setup.set_flatpak_remotes({
-        "flathub": "-"
+        "flathub": ("-", False)
     })
 
     runner = CliRunner()
@@ -243,8 +243,19 @@ def test_cli_refresh_noop(setup):
 
 
 def test_cli_opt_out(setup):
+    setup.calls = []
     with patch("fedora_third_party.config.Config", return_value=setup.cfg):
         opt_out()
+
+    # opting out should have added the Flatpak repository in a disabled state
+    assert sorted(setup.calls) == sorted([
+        ['flatpak', 'remote-add', '--from', 'flathub',
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
+         '--title', 'Fedora Flathub Selection',
+         '--comment', 'Selected applications from Flathub',
+         '--description', 'Selected applications from Flathub (https://flathub.org)',
+         '--disable']
+    ])
 
     runner = CliRunner()
 

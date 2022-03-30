@@ -34,7 +34,7 @@ be enabled when `fedora-third-party refresh` is called.
 ### disable [*--config-only*]
 
 Disables third-party repositories. Configured DNF repositories are disabled.
-Configured Flatpak remotes are removed, unless:
+Configured Flatpak remotes are disabled, unless:
 
 * the remote previously existed and was not created by fedora-third-party.
 * there are Flatpak applications or runtimes already installed from the remote

@@ -45,12 +45,7 @@ def enable(cfg: config.Config, config_only: bool):
         cfg.dnf_config_editor.save()
 
 
-@cli.command()
-@click.option("--config-only", is_flag=True,
-              help="Don't change existing repositories")
-@pass_config
-def disable(cfg: config.Config, config_only: bool):
-    """Disable third-party repositories"""
+def do_disable(cfg: config.Config, config_only: bool):
     assert_root()
 
     cfg.disable()
@@ -62,6 +57,14 @@ def disable(cfg: config.Config, config_only: bool):
         cfg.update_seen_repositories()
         cfg.dnf_config_editor.save()
 
+
+@cli.command()
+@click.option("--config-only", is_flag=True,
+              help="Don't change existing repositories")
+@pass_config
+def disable(cfg: config.Config, config_only: bool):
+    """Disable third-party repositories"""
+    do_disable(cfg, config_only)
 
 @cli.command()
 @click.option("-q", "--quiet", is_flag=True,
@@ -138,4 +141,5 @@ def opt_out():
         print("Use 'fedora-third-party disable' to change the existing status.", file=sys.stderr)
         sys.exit(1)
 
-    cfg.disable()
+    # We invoke the full disable mechanism to make sure that we add flatpak repositories disabled
+    do_disable(cfg, False)

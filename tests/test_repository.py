@@ -20,6 +20,7 @@ def test_dnf_repository(setup):
     parser.set('myrepo', 'repository', 'myrepo')
     repository = DnfRepository(setup.cfg, 'myrepo', parser)
     assert not repository.is_seen()
+    assert not repository.is_hidden()
     repository.enable()
     setup.cfg.dnf_config_editor.save()
     setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=True)
@@ -56,13 +57,23 @@ def test_flatpak_repository(setup):
     ]
 
     setup.set_flatpak_remotes({
-        "myrepo": "/etc/myrepo.filter"
+        "myrepo": ("/etc/myrepo.filter", False)
     })
 
     setup.calls = []
     repository.disable()
     assert setup.calls == [
-        ['flatpak', 'remote-delete', 'myrepo'],
+        ['flatpak', 'remote-modify', 'myrepo', '--disable'],
+    ]
+
+    setup.set_flatpak_remotes({
+        "myrepo": ("/etc/myrepo.filter", True)
+    })
+
+    setup.calls = []
+    repository.enable()
+    assert setup.calls == [
+        ['flatpak', 'remote-modify', 'myrepo', '--enable'],
     ]
 
 
@@ -81,7 +92,7 @@ def test_flatpak_repository_existing(setup):
     repository = make_flatpak_repository(setup)
 
     setup.set_flatpak_remotes({
-        "myrepo": "/etc/myrepo.filter"
+        "myrepo": ("/etc/myrepo.filter", False)
     })
 
     setup.calls = []
@@ -121,7 +132,7 @@ def test_flatpak_repository_keep_unfiltered(setup):
     repository.enable()
 
     setup.set_flatpak_remotes({
-        "myrepo": "-"
+        "myrepo": ("-", False)
     })
 
     setup.calls = []
@@ -135,8 +146,10 @@ def test_flatpak_repository_hide_unfiltered(setup):
 
     repository.enable()
 
+    assert not repository.is_hidden()
+
     setup.set_flatpak_remotes({
-        "myrepo": "-"
+        "myrepo": ("-", False)
     })
 
     assert repository.is_hidden()

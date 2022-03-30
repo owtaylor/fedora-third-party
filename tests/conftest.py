@@ -1,6 +1,7 @@
 from pathlib import Path
 from subprocess import check_call
 from textwrap import dedent
+from typing import Dict, Tuple
 from unittest import mock
 
 import pytest
@@ -24,13 +25,15 @@ class TestSetup:
 
     def _check_output(self, args, encoding=None):
         assert encoding == "UTF-8"
-        assert args == ["flatpak", "remotes", "--system", "--columns=name,filter"]
+        assert args == [
+            "flatpak", "remotes", "--system", "--show-disabled", "--columns=name,filter,options"
+        ]
         output = ""
-        for name, filter in self.flatpak_remotes.items():
-            output += f"{name} {filter}\n"
+        for name, (filter, disabled) in self.flatpak_remotes.items():
+            output += f"{name}\t{filter}\t{'disabled' if disabled else ''}\n"
         return output
 
-    def set_flatpak_remotes(self, flatpak_remotes):
+    def set_flatpak_remotes(self, flatpak_remotes: Dict[str, Tuple[str, bool]]):
         self.flatpak_remotes = flatpak_remotes
         get_flatpak_remotes.cache_clear()
 

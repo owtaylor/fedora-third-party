@@ -58,23 +58,23 @@ class DnfRepository(Repository):
 class FlatpakRemote:
     name: str
     filter: Optional[str]
+    disabled: bool
 
 
 @functools.cache
 def get_flatpak_remotes():
     output = subprocess.check_output([
-        "flatpak", "remotes", "--system", "--columns=name,filter"
+        "flatpak", "remotes", "--system", "--show-disabled", "--columns=name,filter,options"
     ], encoding="UTF-8")
 
     result: List[FlatpakRemote] = []
     for line in output.split("\n"):
-        line = line.strip()
         if line == "":
             continue
-        name, filter = line.split()
+        name, filter, options = line.split("\t")
         if filter == "-":
             filter = None
-        result.append(FlatpakRemote(name=name, filter=filter))
+        result.append(FlatpakRemote(name=name, filter=filter, disabled="disabled" in options))
 
     return result
 
@@ -118,32 +118,52 @@ class FlatpakRepository(Repository):
                     e.matches(GLib.key_file_error_quark(), GLib.KeyFileError.KEY_NOT_FOUND))
             return None
 
+    def add_repo(self, disabled):
+        # Avoid fighting the user - if they removed a repository we added, let that standx
+        if self.cfg.is_repository_added(self):
+            return
+
+        args = ['remote-add', '--from', self.name, self.flatpakrepo]
+
+        # Priority is:
+        #  - title, etc. from command line
+        #  - title, etc. from downloaded remote metadata
+        #  - title, etc. from flatpakrepo file
+        #
+        # But we want to be able to override the parameters from the remote, so we force the
+        # title, etc. from the flatpakrepo file into the command line
+        for key in ('Title', 'Comment', 'Description'):
+            value = self.get_flatpakrepo_param(key)
+            if value:
+                option = '--' + key.lower()
+                args += [option, value]
+
+        if disabled:
+            args += ['--disable']
+        self.run_flatpak(args)
+        self.cfg.set_repository_added(self, True)
+
     def enable(self):
-        if not self.get_existing_remote():
-            args = ['remote-add', '--from', self.name, self.flatpakrepo]
+        remote = self.get_existing_remote()
+        if not remote:
+            self.add_repo(disabled=False)
+            return
 
-            # Priority is:
-            #  - title, etc. from command line
-            #  - title, etc. from downloaded remote metadata
-            #  - title, etc. from flatpakrepo file
-            #
-            # But we want to be able to override the parameters from the remote, so we force the
-            # title, etc. from the flatpakrepo file into the command line
-            for key in ('Title', 'Comment', 'Description'):
-                value = self.get_flatpakrepo_param(key)
-                if value:
-                    option = '--' + key.lower()
-                    args += [option, value]
-            self.run_flatpak(args)
-            self.cfg.set_repository_added(self, True)
-
-    def disable(self):
-        # Only remove repositories we added ourself
+        # Only modify repositories we added ourself
         if not self.cfg.is_repository_added(self):
             return
 
+        if remote.disabled:
+            self.run_flatpak(['remote-modify', self.name, '--enable'])
+
+    def disable(self):
         remote = self.get_existing_remote()
         if remote is None:
+            self.add_repo(disabled=True)
+            return
+
+        # Only modify repositories we added ourself
+        if not self.cfg.is_repository_added(self):
             return
 
         # For "keep_unfiltered" repositories, if the filter was removed
@@ -153,5 +173,5 @@ class FlatpakRepository(Repository):
             if remote.filter is None:
                 return
 
-        self.run_flatpak(['remote-delete', self.name])
-        self.cfg.set_repository_added(self, False)
+        if not remote.disabled:
+            self.run_flatpak(['remote-modify', self.name, '--disable'])
