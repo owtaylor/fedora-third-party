@@ -37,7 +37,6 @@ Disables third-party repositories. Configured DNF repositories are disabled.
 Configured Flatpak remotes are disabled, unless:
 
 * the remote previously existed and was not created by fedora-third-party.
-* there are Flatpak applications or runtimes already installed from the remote
 * the remote has been modified to remove a filter and the `keep_unfiltered`
   flag is configured for the remote.
 
