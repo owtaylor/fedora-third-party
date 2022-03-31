@@ -1,5 +1,5 @@
 Name:		fedora-third-party
-Version:	0.9
+Version:	0.9.1
 Release:	1%{dist}
 Summary:	Tool for handling third-party RPM and Flatpak repositories in Fedora
 
@@ -13,11 +13,13 @@ BuildRequires:	systemd
 BuildRequires:	polkit
 BuildRequires:	python3-click
 BuildRequires:	python3-devel
+BuildRequires:  python3-gobject-base
 BuildRequires:	python3-pytest
 BuildRequires:	python3-setuptools
 BuildRequires:	golang-github-cpuguy83-md2man
 
 Requires: python3-click
+Requires: python3-gobject-base
 
 %description
 fedora-third-party is a tool for handling third-party RPM and Flatpak
