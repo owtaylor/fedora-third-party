@@ -30,7 +30,11 @@ class TestSetup:
         ]
         output = ""
         for name, (filter, disabled) in self.flatpak_remotes.items():
-            output += f"{name}\t{filter}\t{'disabled' if disabled else ''}\n"
+            if disabled:
+                output += f"{name}\t{filter}\tdisabled"
+            else:
+                # No trailing \t - https://github.com/flatpak/flatpak/pull/2189
+                output += f"{name}\t{filter}"
         return output
 
     def set_flatpak_remotes(self, flatpak_remotes: Dict[str, Tuple[str, bool]]):

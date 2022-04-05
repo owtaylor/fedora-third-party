@@ -71,9 +71,10 @@ def get_flatpak_remotes():
     for line in output.split("\n"):
         if line == "":
             continue
-        name, filter, options = line.split("\t")
-        if filter == "-":
-            filter = None
+        columns = line.split("\t")
+        name = columns[0]
+        filter = columns[1] if columns[1] != "-" else None
+        options = columns[2] if len(columns) > 2 else ""
         result.append(FlatpakRemote(name=name, filter=filter, disabled="disabled" in options))
 
     return result
