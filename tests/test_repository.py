@@ -126,6 +126,13 @@ def test_flatpak_repository_was_removed(setup):
     ]
 
 
+def test_flatpak_repository_not_added_is_unseen(setup):
+    repository = make_flatpak_repository(setup)
+
+    repository.cfg.update_seen_repositories()
+    assert not repository.is_seen()
+
+
 def test_flatpak_repository_keep_unfiltered(setup):
     repository = make_flatpak_repository(setup)
 

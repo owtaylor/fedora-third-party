@@ -101,6 +101,15 @@ class FlatpakRepository(Repository):
 
         return False
 
+    def is_seen(self):
+        # Before version 0.9, we didn't add repositories if they were disabled; to
+        # fix up old systems on "fedora-third-party refresh", we treat "never added"
+        # as "never seen."
+        if not self.cfg.is_repository_added(self):
+            return False
+
+        return super().is_seen()
+
     def run_flatpak(self, args):
         command = ["flatpak"]
         command += args

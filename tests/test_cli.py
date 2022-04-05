@@ -242,6 +242,32 @@ def test_cli_refresh_noop(setup):
     assert statefile.stat().st_mtime == 0
 
 
+def test_cli_refresh_upgrade_pre_0_9(setup):
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ['disable'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    # Emulate the old behavior, where disabling Flatpak repositories didn't add them
+    repo = next(r for r in setup.cfg.repositories if r.name == 'flathub')
+    setup.cfg.set_repository_added(repo, False)
+
+    # fedora-third-party should then add the repository disabled
+    setup.calls = []
+    result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert sorted(setup.calls) == sorted([
+        ['flatpak', 'remote-add', '--from', 'flathub',
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
+         '--title', 'Fedora Flathub Selection',
+         '--comment', 'Selected applications from Flathub',
+         '--description', 'Selected applications from Flathub (https://flathub.org)',
+         '--disable']
+    ])
+
+
 def test_cli_opt_out(setup):
     setup.calls = []
     with patch("fedora_third_party.config.Config", return_value=setup.cfg):
