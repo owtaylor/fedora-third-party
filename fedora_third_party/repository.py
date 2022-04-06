@@ -11,7 +11,7 @@ from typing import List, Optional, TYPE_CHECKING
 
 import gi
 gi.require_version("GLib", "2.0")
-from gi.repository import GLib
+from gi.repository import GLib  # noqa: E402
 
 
 if TYPE_CHECKING:

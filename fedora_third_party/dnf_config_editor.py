@@ -2,7 +2,6 @@ import logging
 import os
 import re
 from pathlib import Path
-import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Dict, Optional, Set, Tuple
 

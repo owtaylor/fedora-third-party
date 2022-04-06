@@ -10,7 +10,7 @@ from fedora_third_party.dnf_config_editor import DnfConfigEditor
 
 @pytest.fixture
 def reposdir(tmpdir):
-    yield Path(tmpdir / "etc/yum.repos.d") 
+    yield Path(tmpdir / "etc/yum.repos.d")
 
 
 @pytest.fixture

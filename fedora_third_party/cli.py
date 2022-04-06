@@ -66,6 +66,7 @@ def disable(cfg: config.Config, config_only: bool):
     """Disable third-party repositories"""
     do_disable(cfg, config_only)
 
+
 @cli.command()
 @click.option("-q", "--quiet", is_flag=True,
               help="Don't print anything to stdout")
