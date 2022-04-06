@@ -1,4 +1,5 @@
 import os
+import subprocess
 from unittest.mock import patch
 from textwrap import dedent
 
@@ -98,6 +99,48 @@ def test_cli_config_only(setup):
     result = runner.invoke(cli, ['query', '-q'], obj=setup.cfg)
     assert result.exit_code == 1
     assert result.output == ''
+
+
+def test_cli_enable_retry(setup, caplog):
+    runner = CliRunner()
+
+    setup.exceptions = {
+        'remote-add': subprocess.CalledProcessError(cmd=['x', 'y'], returncode=1)
+    }
+    result = runner.invoke(cli, ['enable'], obj=setup.cfg)
+    assert "Command 'x y' failed, exit status=1" in caplog.text
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    setup.calls = []
+    setup.exceptions = {}
+    result = runner.invoke(cli, ['enable'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert setup.calls == [remote_add_command(setup)]
+
+
+def test_cli_disable_retry(setup, caplog):
+    runner = CliRunner()
+
+    setup.exceptions = {
+        'remote-add': subprocess.CalledProcessError(cmd=['x', 'y'], returncode=1)
+    }
+    result = runner.invoke(cli, ['disable'], obj=setup.cfg)
+    assert "Command 'x y' failed, exit status=1" in caplog.text
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    setup.calls = []
+    setup.exceptions = {}
+    result = runner.invoke(cli, ['disable'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert setup.calls == [remote_add_command(setup, disable=True)]
 
 
 def test_cli_nonroot(setup):
@@ -220,6 +263,32 @@ def test_cli_refresh(setup, enabled):
     setup.assert_dnf_repo_status(enabled=not enabled)
     # But the new repo is enabled
     setup.assert_dnf_repo_status(repofile="myrepo.repo", enabled=enabled)
+
+
+def test_cli_refresh_retry(setup, caplog):
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ['enable', '--config-only'], obj=setup.cfg)
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    setup.calls = []
+    setup.exceptions = {
+        'remote-add': subprocess.CalledProcessError(cmd=['x', 'y'], returncode=1)
+    }
+    result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
+    assert "Command 'x y' failed, exit status=1" in caplog.text
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''
+
+    setup.calls = []
+    setup.exceptions = {}
+    result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
+    assert not result.exception
+    assert result.exit_code == 0
+    assert result.output == ''
+    assert setup.calls == [remote_add_command(setup)]
 
 
 def test_cli_refresh_fresh_install(setup):

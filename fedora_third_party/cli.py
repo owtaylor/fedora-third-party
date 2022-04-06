@@ -4,6 +4,7 @@ import os
 import sys
 
 from . import config
+from .repository import ModificationFailedError
 from .table import Table
 
 
@@ -38,10 +39,14 @@ def enable(cfg: config.Config, config_only: bool):
     cfg.enable()
 
     if not config_only:
+        retry_repositories = set()
         for repository in cfg.list_repositories():
-            repository.enable()
+            try:
+                repository.enable()
+            except ModificationFailedError:
+                retry_repositories.add(repository)
 
-        cfg.update_seen_repositories()
+        cfg.update_seen_repositories(retry_repositories=retry_repositories)
         cfg.dnf_config_editor.save()
 
 
@@ -51,10 +56,14 @@ def do_disable(cfg: config.Config, config_only: bool):
     cfg.disable()
 
     if not config_only:
+        retry_repositories = set()
         for repository in cfg.list_repositories():
-            repository.disable()
+            try:
+                repository.disable()
+            except ModificationFailedError:
+                retry_repositories.add(repository)
 
-        cfg.update_seen_repositories()
+        cfg.update_seen_repositories(retry_repositories=retry_repositories)
         cfg.dnf_config_editor.save()
 
 
@@ -122,13 +131,17 @@ def refresh(cfg: config.Config):
     if len(unseen) == 0:
         return
 
+    retry_repositories = []
     for repository in unseen:
-        if cfg.is_enabled():
-            repository.enable()
-        else:
-            repository.disable()
+        try:
+            if cfg.is_enabled():
+                repository.enable()
+            else:
+                repository.disable()
+        except ModificationFailedError:
+            retry_repositories.append(repository)
 
-    cfg.update_seen_repositories()
+    cfg.update_seen_repositories(retry_repositories=retry_repositories)
     cfg.dnf_config_editor.save()
 
 

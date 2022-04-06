@@ -1,8 +1,13 @@
 from configparser import ConfigParser
+import subprocess
 from textwrap import dedent
 from typing import Optional
 
-from fedora_third_party.repository import DnfRepository, FlatpakRepository
+import pytest
+
+from fedora_third_party.repository import (
+    DnfRepository, FlatpakRepository, ModificationFailedError
+)
 
 
 def test_dnf_repository(setup):
@@ -98,6 +103,28 @@ def test_flatpak_repository_enable_no_title(setup):
     ]
 
 
+def test_flatpak_repository_modification_fails(setup):
+    repository = make_flatpak_repository(setup, title=None)
+
+    setup.calls = []
+    with pytest.raises(ModificationFailedError):
+        setup.exceptions = {
+            "remotes": subprocess.CalledProcessError(returncode=1, cmd=["x", "y"])
+        }
+        repository.enable()
+    assert setup.calls == []
+
+    # reset the cached error in get_flatpak_remotes()
+    setup.set_flatpak_remotes({})
+    setup.calls = []
+    with pytest.raises(ModificationFailedError):
+        setup.exceptions = {
+            "remote-add": subprocess.CalledProcessError(returncode=1, cmd=["x", "y"])
+        }
+        repository.enable()
+    assert setup.calls == []
+
+
 def test_flatpak_repository_existing(setup):
     repository = make_flatpak_repository(setup)
 
@@ -177,3 +204,13 @@ def test_flatpak_repository_hide_unfiltered(setup):
     })
 
     assert repository.is_hidden()
+
+    # In this case, if flatpak-remotes fails, we just treat the repository as not-existing
+
+    setup.set_flatpak_remotes({})
+    setup.exceptions['remotes'] = subprocess.CalledProcessError(returncode=1, cmd=['x', 'y'])
+    assert not repository.is_hidden()
+
+    setup.set_flatpak_remotes({})
+    setup.exceptions['remotes'] = FileNotFoundError()
+    assert not repository.is_hidden()

@@ -14,10 +14,16 @@ class TestSetup:
     def __init__(self, tmpdir):
         self.tmpdir = tmpdir
         self.calls = []
+        self.exceptions = {}
         self.root = Path(self.tmpdir) / "root"
         self.set_flatpak_remotes({})
 
+    def _maybe_raise(self, args):
+        if args[0] == "flatpak" and args[1] in self.exceptions:
+            raise self.exceptions[args[1]]
+
     def _check_call(self, args):
+        self._maybe_raise(args)
         if args[0] == 'flatpak':
             self.calls.append(args)
         else:
@@ -28,6 +34,7 @@ class TestSetup:
         assert args == [
             "flatpak", "remotes", "--system", "--show-disabled", "--columns=name,filter,options"
         ]
+        self._maybe_raise(args)
         output = ""
         for name, (filter, disabled) in self.flatpak_remotes.items():
             if disabled:

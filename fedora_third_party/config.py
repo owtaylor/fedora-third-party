@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from functools import cached_property
 from pathlib import Path
+from typing import Collection, Optional
 
 from .dnf_config_editor import DnfConfigEditor
 from .repository import DnfRepository, FlatpakRepository, Repository
@@ -44,8 +45,11 @@ class Config:
         with open(self.state_path, 'w') as f:
             self.state_parser.write(f)
 
-    def update_seen_repositories(self):
+    def update_seen_repositories(self, retry_repositories: Optional[Collection] = None):
         for repository in sorted(self.repositories, key=lambda r: r.name):
+            if retry_repositories is not None and repository in retry_repositories:
+                continue
+
             if not self.state_parser.has_section(repository.name):
                 self.state_parser.add_section(repository.name)
             self.state_parser.set(repository.name, 'seen', 'yes')

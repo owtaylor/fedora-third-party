@@ -21,6 +21,11 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class ModificationFailedError(Exception):
+    """Couldn't modify the repository for some (retryable) error"""
+    pass
+
+
 class Repository(ABC):
     def __init__(self, cfg: Config, name: str):
         self.cfg = cfg
@@ -63,9 +68,18 @@ class FlatpakRemote:
 
 @functools.cache
 def get_flatpak_remotes():
-    output = subprocess.check_output([
-        "flatpak", "remotes", "--system", "--show-disabled", "--columns=name,filter,options"
-    ], encoding="UTF-8")
+    try:
+        output = subprocess.check_output([
+            "flatpak", "remotes", "--system", "--show-disabled", "--columns=name,filter,options"
+        ], encoding="UTF-8")
+    except subprocess.CalledProcessError as e:
+        logger.warning(
+            "Command '%s' failed, exit status=%s", " ".join(e.cmd), e.returncode
+        )
+        return None
+    except FileNotFoundError:
+        logger.warning("Cannot list Flatpak remotes: flatpak command not found")
+        return None
 
     result: List[FlatpakRemote] = []
     for line in output.split("\n"):
@@ -90,12 +104,19 @@ class FlatpakRepository(Repository):
         if not os.path.isabs(self.flatpakrepo):
             self.flatpakrepo = str(self.cfg.libconfdir / self.flatpakrepo)
 
-    def get_existing_remote(self):
-        return next((r for r in get_flatpak_remotes() if r.name == self.name), None)
+    def get_existing_remote(self, allow_broken_installation=False):
+        remotes = get_flatpak_remotes()
+        if remotes is None:
+            if allow_broken_installation:
+                return None
+            else:
+                raise ModificationFailedError()
+        else:
+            return next((r for r in remotes if r.name == self.name), None)
 
     def is_hidden(self):
         if self.keep_unfiltered:
-            remote = self.get_existing_remote()
+            remote = self.get_existing_remote(allow_broken_installation=True)
             if remote and remote.filter is None:
                 return True
 
@@ -114,8 +135,12 @@ class FlatpakRepository(Repository):
         command = ["flatpak"]
         command += args
 
-        logger.info("Calling %s", " ".join(command))
-        subprocess.check_call(command)
+        logger.info("Calling '%s'", " ".join(command))
+        try:
+            subprocess.check_call(command)
+        except subprocess.CalledProcessError as e:
+            logger.warning("Command '%s' failed, exit status=%s", " ".join(e.cmd), e.returncode)
+            raise ModificationFailedError()
 
     def get_flatpakrepo_param(self, key):
         key_file = GLib.KeyFile.new()
