@@ -9,6 +9,21 @@ from fedora_third_party.dnf_config_editor import DnfConfigEditor
 from fedora_third_party.cli import cli, opt_out
 
 
+def remote_add_command(setup, disable=False):
+    args = [
+        'flatpak', 'remote-add', '--from', 'flathub',
+        str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
+        '--title', 'Fedora Flathub Selection',
+        '--comment', 'Selected applications from Flathub',
+        '--description', 'Selected applications from Flathub (https://flathub.org)'
+    ]
+
+    if disable:
+        args.append("--disable")
+
+    return args
+
+
 def test_cli(setup):
     runner = CliRunner()
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
@@ -23,13 +38,7 @@ def test_cli(setup):
     result = runner.invoke(cli, ['enable'], obj=setup.cfg)
     assert result.exit_code == 0
     assert result.output == ''
-    assert sorted(setup.calls) == sorted([
-        ['flatpak', 'remote-add', '--from', 'flathub',
-         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
-         '--title', 'Fedora Flathub Selection',
-         '--comment', 'Selected applications from Flathub',
-         '--description', 'Selected applications from Flathub (https://flathub.org)']
-    ])
+    assert setup.calls == [remote_add_command(setup)]
     setup.assert_dnf_repo_status(enabled=True)
 
     result = runner.invoke(cli, ['query'], obj=setup.cfg)
@@ -258,14 +267,7 @@ def test_cli_refresh_upgrade_pre_0_9(setup):
     result = runner.invoke(cli, ['refresh'], obj=setup.cfg)
     assert result.exit_code == 0
     assert result.output == ''
-    assert sorted(setup.calls) == sorted([
-        ['flatpak', 'remote-add', '--from', 'flathub',
-         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
-         '--title', 'Fedora Flathub Selection',
-         '--comment', 'Selected applications from Flathub',
-         '--description', 'Selected applications from Flathub (https://flathub.org)',
-         '--disable']
-    ])
+    assert setup.calls == [remote_add_command(setup, disable=True)]
 
 
 def test_cli_opt_out(setup):
@@ -274,14 +276,7 @@ def test_cli_opt_out(setup):
         opt_out()
 
     # opting out should have added the Flatpak repository in a disabled state
-    assert sorted(setup.calls) == sorted([
-        ['flatpak', 'remote-add', '--from', 'flathub',
-         str(setup.root / "usr/lib/fedora-third-party/conf.d/flathub.flatpakrepo"),
-         '--title', 'Fedora Flathub Selection',
-         '--comment', 'Selected applications from Flathub',
-         '--description', 'Selected applications from Flathub (https://flathub.org)',
-         '--disable']
-    ])
+    assert setup.calls == [remote_add_command(setup, disable=True)]
 
     runner = CliRunner()
 
