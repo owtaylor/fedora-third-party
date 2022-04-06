@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from unittest.mock import patch
@@ -7,7 +8,7 @@ from click.testing import CliRunner
 import pytest
 
 from fedora_third_party.dnf_config_editor import DnfConfigEditor
-from fedora_third_party.cli import cli, opt_out
+from fedora_third_party.cli import cli, opt_out, ClickHandler
 
 
 def remote_add_command(setup, disable=False):
@@ -370,3 +371,28 @@ def test_cli_opt_out_later(setup, capsys):
 
     assert capsys.readouterr().err == \
         "Use 'fedora-third-party disable' to change the existing status.\n"
+
+
+def test_cli_ClickHandler(setup):
+    runner = CliRunner()
+
+    handler = ClickHandler()
+    handler.setLevel(logging.WARNING)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+
+    # pytest redirects log messages from the root logger - wedge our ClickHandler
+    # in first so we can test that it works as expected
+    logger = logging.getLogger("fedora_third_party.repository")
+    try:
+        logger.propagate = False
+        logger.addHandler(handler)
+
+        setup.exceptions = {
+            'remote-add': subprocess.CalledProcessError(cmd=['x', 'y'], returncode=1)
+        }
+        result = runner.invoke(cli, ['enable'], obj=setup.cfg)
+        # with CliRunner 'fedora-third-party enable' becomes 'cli enable'
+        assert "cli enable:WARNING: Command 'x y' failed, exit status=1" in result.output
+    finally:
+        logger.propagate = True
+        logger.removeHandler(handler)

@@ -17,6 +17,19 @@ def assert_root():
         sys.exit(1)
 
 
+class ClickHandler(logging.StreamHandler):
+    def emit(self, record: logging.LogRecord):
+        if self.formatter:
+            context = click.get_current_context()
+            output = self.formatter.format(record)
+            click.echo(
+                context.command_path + ":" +
+                click.style(record.levelname, fg="red", bold=True) +
+                ": " + output,
+                err=True
+            )
+
+
 @click.group()
 @click.option("-v", "--verbose", is_flag=True,
               help="Show verbose debugging output")
@@ -25,7 +38,9 @@ def cli(cfg: config.Config, verbose: bool):
     if verbose:
         logging.basicConfig(level=logging.INFO)
     else:
-        logging.basicConfig(level=logging.WARNING)
+        logging.basicConfig(level=logging.WARNING,
+                            handlers=[ClickHandler()],
+                            format="%(message)s")
 
 
 @cli.command()
