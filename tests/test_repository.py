@@ -56,6 +56,16 @@ def test_flatpak_repository(setup):
          '--title', 'My Repo'],
     ]
 
+    setup.calls = []
+    setup.cfg.set_repository_added(repository, False)
+    repository.disable()
+    assert setup.calls == [
+        ['flatpak', 'remote-add', '--from', 'myrepo',
+         str(setup.root / "usr/lib/fedora-third-party/conf.d/myrepo.flatpakrepo"),
+         '--title', 'My Repo',
+         '--disable'],
+    ]
+
     setup.set_flatpak_remotes({
         "myrepo": ("/etc/myrepo.filter", False)
     })
@@ -124,6 +134,13 @@ def test_flatpak_repository_was_removed(setup):
     repository.disable()
     assert setup.calls == [
     ]
+
+
+def test_flatpak_repository_not_seen_is_unseen(setup):
+    repository = make_flatpak_repository(setup)
+
+    repository.cfg.set_repository_added(repository, True)
+    assert not repository.is_seen()
 
 
 def test_flatpak_repository_not_added_is_unseen(setup):
