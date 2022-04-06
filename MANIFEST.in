@@ -5,3 +5,4 @@ include polkit/*.policy
 include polkit/*.rules
 include systemd/*.service
 include tests/*.py
+include tools/test.sh
